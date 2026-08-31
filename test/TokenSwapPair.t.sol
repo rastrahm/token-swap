@@ -9,7 +9,8 @@ import {TokenSwapPair} from "../src/TokenSwapPair.sol";
 
 /**
  * @title TokenSwapPairTest
- * @notice Suite TDD del par: mint / swap / burn / K-check (fase 1 — rojo hasta fases 2–5).
+ * @notice Suite TDD del par: mint / swap / burn / K-check.
+ * @dev Mint verde (fase 3). Swap/burn en rojo hasta fases 4–5.
  */
 contract TokenSwapPairTest is Test {
     uint256 internal constant MINIMUM_LIQUIDITY = 1000;
@@ -107,7 +108,7 @@ contract TokenSwapPairTest is Test {
         uint256 firstLiq = pair.mint(lp);
         vm.stopPrank();
 
-        // Hasta que exista mint real (fase 3), este assert mantiene el test en rojo sin div-by-zero.
+        // Primer mint debe acuñar LP (fase 3).
         assertGt(firstLiq, 0, "first mint must mint LP before subsequent pro-rata");
 
         uint256 add0 = 100 ether;
