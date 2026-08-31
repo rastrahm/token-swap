@@ -1,0 +1,30 @@
+# .cursorrules — Module 06: Constant Product Automated Market Maker (AMM)
+
+## MODULE OVERVIEW
+Focus on building a gas-optimized constant product AMM (x * y = k) supporting token swaps, liquidity minting/burning, and TWAP oracle price accumulation using Foundry and Solidity 0.8.24.
+
+---
+
+## 1. TECHNICAL CONSTRAINTS & STACK
+
+- **Compiler Version:** Strictly `pragma solidity 0.8.24;` (no floating pragmas).
+- **Tooling:** Foundry (`forge` for unit testing, fuzzing, invariant tests, and gas profiling).
+- **Core Model:** Constant Product Formula (x * y = k) with 0.3% protocol swap fee and LP token minting using square root geometry (`Math.sqrt`).
+- **Safety Checks:** K-value verification post-swap (`balance0Adjusted * balance1Adjusted >= reserve0 * reserve1 * 1000**2`).
+
+---
+
+## 2. CODING & SECURITY RULES
+
+- **Reentrancy Protection:** Strictly apply `ReentrancyGuard` or CEI on `swap()`, `mint()`, and `burn()` routines.
+- **Custom Errors:** Replace `require` strings with custom errors (`error InsufficientOutputAmount()`, `error InsufficientLiquidity()`, `error InvalidK()`, `error ZeroAddress()`).
+- **TWAP Price Accumulator:** Update `price0CumulativeLast` and `price1CumulativeLast` using block timestamp deltas in `_update()`.
+- **Low-Level Token Transfers:** Handle non-standard ERC-20 tokens via `SafeERC20` or low-level `call` checks to ensure explicit reverts on boolean returns.
+
+---
+
+## 3. TESTING REQUIREMENTS
+
+- **Foundry Unit Tests:** Validate liquidity provision (first vs. subsequent deposits), swap routing with slippage protection, and LP token burning.
+- **Invariant Testing:** Enforce invariant `reserve0 * reserve1 >= k` across random sequences of swaps and liquidity deposits/withdrawals.
+- **Fuzzing Tests:** Fuzz swap input amounts and slippage limits using `bound()`.
