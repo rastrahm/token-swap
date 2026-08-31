@@ -2,7 +2,7 @@
 
 AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y oráculo TWAP. Solidity `0.8.24` + Foundry.
 
-**Estado:** Fases **0–1** ✅ (scaffold + tests TDD en rojo). Fases 2–8 y demo Next.js pendientes.
+**Estado:** Fases **0–2** ✅ (scaffold, tests TDD, Math + TWAP `_update`). Fases 3–8 y demo Next.js pendientes.
 
 ---
 
@@ -49,9 +49,11 @@ forge test
 
 ```
 src/interfaces/      # ITokenSwapPair, Factory, Router
+src/libraries/       # Math.sqrt, UQ112x112 (TWAP)
 src/mocks/           # MockERC20 (tests / Anvil)
 src/utils/           # ReentrancyGuard (EIP-1153)
-test/                # Phase0 smoke; unit/fuzz/invariant en fases 1+
+src/TokenSwapPair.sol
+test/                # Phase0, Math, Update TWAP; Pair mint/swap/burn en rojo
 doc/                 # Plan y diagramas
 lib/                 # Dependencias (gitignored)
 ```
