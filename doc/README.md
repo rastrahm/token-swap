@@ -1,6 +1,6 @@
 # Documentación — Module 06: Constant Product AMM
 
-Índice de la carpeta `doc/`. **Fase 0** cerrada (scaffold Foundry + interfaces).
+Índice de la carpeta `doc/`. **Fases 0–1** cerradas (scaffold + tests TDD mint/swap/burn/K en rojo).
 
 | Documento | Contenido |
 |-----------|-----------|
@@ -10,5 +10,5 @@
 | [flujograma.md](./flujograma.md) | Operativo, K-check, seguridad, pipeline TDD |
 
 **Interfaces:** `src/interfaces/ITokenSwap{Pair,Factory,Router}.sol`  
-**Infra:** `src/mocks/MockERC20.sol`, `src/utils/ReentrancyGuard.sol`  
-**Tests:** `forge test` → 5 smoke (`test/Phase0.t.sol`)
+**Stub:** `src/TokenSwapPair.sol` (lógica en fases 2–5)  
+**Tests:** `forge test` → Phase0 5 PASS · TokenSwapPair 3 PASS / 11 FAIL (rojo TDD)
