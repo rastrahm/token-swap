@@ -2,7 +2,7 @@
 
 AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y oráculo TWAP. Solidity `0.8.24` + Foundry.
 
-**Estado:** Fases **0–3** ✅ (scaffold, TDD, Math/TWAP, mint LP). Fases 4–8 y demo Next.js pendientes.
+**Estado:** Fases **0–4** ✅ (scaffold → mint → swap/K). Fases 5–8 y demo Next.js pendientes.
 
 ---
 

@@ -1,6 +1,6 @@
 # Planificación — Module 06: Constant Product AMM (Token Swap)
 
-**Estado:** Fases **0–3** ✅ · fases **4–8** + demo Next.js pendientes.
+**Estado:** Fases **0–4** ✅ · fases **5–8** + demo Next.js pendientes.
 
 ## 1. Objetivo del proyecto
 
@@ -163,7 +163,7 @@ address public immutable token1;
 | **1** | Tests falling: mint / swap / burn / K | ✅ |
 | **2** | `Math.sqrt` + `TokenSwapPair` skeleton + `_update` TWAP | ✅ |
 | **3** | `mint` (primer depósito + subsequent) + MINIMUM_LIQUIDITY | ✅ |
-| **4** | `swap` + fee 0.3% + K-check + ReentrancyGuard | 🔲 |
+| **4** | `swap` + fee 0.3% + K-check + ReentrancyGuard | ✅ |
 | **5** | `burn` + `skim` / `sync` | 🔲 |
 | **6** | `TokenSwapFactory` + `TokenSwapRouter` (slippage) | 🔲 |
 | **7** | Invariant suite + fuzz `bound()` | 🔲 |
@@ -189,11 +189,11 @@ address public immutable token1;
 
 - [x] Scaffold Foundry (`0.8.24`, fuzz ≥ 1000)
 - [ ] TDD mint / swap / burn
-- [ ] Fee 0.3% y K-check post-swap
-- [ ] TWAP actualizado en `_update` con delta de timestamp
+- [x] Fee 0.3% y K-check post-swap
+- [x] TWAP actualizado en `_update` con delta de timestamp
 - [ ] CEI + `nonReentrant` en `swap` / `mint` / `burn`
-- [ ] Custom errors (sin strings en `require`)
-- [ ] SafeERC20 / transfers con revert explícito
+- [x] Custom errors (sin strings en `require`)
+- [x] SafeERC20 / transfers con revert explícito
 - [ ] Invariant `reserve0 * reserve1 >= k`
 - [ ] Fuzz con `bound()`
 - [ ] NatSpec en funciones public/external

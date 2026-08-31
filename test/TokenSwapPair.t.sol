@@ -10,7 +10,7 @@ import {TokenSwapPair} from "../src/TokenSwapPair.sol";
 /**
  * @title TokenSwapPairTest
  * @notice Suite TDD del par: mint / swap / burn / K-check.
- * @dev Mint verde (fase 3). Swap/burn en rojo hasta fases 4–5.
+ * @dev Mint + swap verdes (fases 3–4). Burn en rojo hasta fase 5.
  */
 contract TokenSwapPairTest is Test {
     uint256 internal constant MINIMUM_LIQUIDITY = 1000;
