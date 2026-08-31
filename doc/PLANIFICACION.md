@@ -1,6 +1,6 @@
 # Planificación — Module 06: Constant Product AMM (Token Swap)
 
-**Estado:** 🔲 Pendiente (fases **0–8** + demo Next.js planificadas).
+**Estado:** Fase **0** ✅ · fases **1–8** + demo Next.js pendientes.
 
 ## 1. Objetivo del proyecto
 
@@ -159,7 +159,7 @@ address public immutable token1;
 
 | Fase | Entregable | Estado |
 |------|------------|--------|
-| **0** | Scaffold Foundry + docs + interfaces | 🔲 |
+| **0** | Scaffold Foundry + docs + interfaces | ✅ |
 | **1** | Tests falling: mint / swap / burn / K | 🔲 |
 | **2** | `Math.sqrt` + `TokenSwapPair` skeleton + `_update` TWAP | 🔲 |
 | **3** | `mint` (primer depósito + subsequent) + MINIMUM_LIQUIDITY | 🔲 |
@@ -187,7 +187,7 @@ address public immutable token1;
 
 ## 10. Criterios de aceptación
 
-- [ ] Scaffold Foundry (`0.8.24`, fuzz ≥ 1000)
+- [x] Scaffold Foundry (`0.8.24`, fuzz ≥ 1000)
 - [ ] TDD mint / swap / burn
 - [ ] Fee 0.3% y K-check post-swap
 - [ ] TWAP actualizado en `_update` con delta de timestamp
