@@ -1,20 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {ITokenSwapPair} from "./interfaces/ITokenSwapPair.sol";
+import {Math} from "./libraries/Math.sol";
 import {UQ112x112} from "./libraries/UQ112x112.sol";
+import {TokenSwapERC20} from "./TokenSwapERC20.sol";
 import {ReentrancyGuard} from "./utils/ReentrancyGuard.sol";
 
 /**
  * @title TokenSwapPair
  * @notice Par AMM de producto constante (`x * y = k`).
- * @dev Fase 2: `_update` TWAP + `sync`. `mint`/`swap`/`burn` siguen stub (fases 3–5).
- *      `Math.sqrt` vive en `libraries/Math.sol` (se usa en el mint de fase 3).
+ * @dev Fase 3: `mint` (primer depósito + subsequent + MINIMUM_LIQUIDITY).
+ *      `swap`/`burn`/`skim` siguen stub (fases 4–5). `_update` TWAP desde fase 2.
  */
-contract TokenSwapPair is ITokenSwapPair, ERC20, ReentrancyGuard {
+contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
     using UQ112x112 for uint224;
 
     /// @inheritdoc ITokenSwapPair
@@ -45,7 +46,7 @@ contract TokenSwapPair is ITokenSwapPair, ERC20, ReentrancyGuard {
      * @param token0_ Token con dirección menor.
      * @param token1_ Token con dirección mayor.
      */
-    constructor(address factory_, address token0_, address token1_) ERC20("TokenSwap LP", "TSLP") {
+    constructor(address factory_, address token0_, address token1_) {
         if (factory_ == address(0) || token0_ == address(0) || token1_ == address(0)) {
             revert ZeroAddress();
         }
@@ -65,10 +66,37 @@ contract TokenSwapPair is ITokenSwapPair, ERC20, ReentrancyGuard {
         blockTimestampLast_ = blockTimestampLast;
     }
 
-    /// @inheritdoc ITokenSwapPair
-    /// @dev Stub — implementar en fase 3 (`Math.sqrt` + MINIMUM_LIQUIDITY).
-    function mint(address) external nonReentrant returns (uint256 liquidity) {
-        return 0;
+    /**
+     * @inheritdoc ITokenSwapPair
+     * @dev Primer mint: `sqrt(amount0 * amount1) - MINIMUM_LIQUIDITY` (lock a `address(0)`).
+     *      Subsequent: `min(amount0 * totalSupply / reserve0, amount1 * totalSupply / reserve1)`.
+     */
+    function mint(address to) external nonReentrant returns (uint256 liquidity) {
+        uint112 reserve0_ = reserve0;
+        uint112 reserve1_ = reserve1;
+        uint256 balance0 = IERC20(token0).balanceOf(address(this));
+        uint256 balance1 = IERC20(token1).balanceOf(address(this));
+        uint256 amount0 = balance0 - reserve0_;
+        uint256 amount1 = balance1 - reserve1_;
+
+        uint256 supply = totalSupply;
+        if (supply == 0) {
+            uint256 root = Math.sqrt(amount0 * amount1);
+            if (root <= MINIMUM_LIQUIDITY) {
+                revert InsufficientLiquidity();
+            }
+            liquidity = root - MINIMUM_LIQUIDITY;
+            _mint(address(0), MINIMUM_LIQUIDITY);
+        } else {
+            liquidity = Math.min((amount0 * supply) / reserve0_, (amount1 * supply) / reserve1_);
+        }
+        if (liquidity == 0) {
+            revert InsufficientLiquidity();
+        }
+        _mint(to, liquidity);
+
+        _update(balance0, balance1, reserve0_, reserve1_);
+        emit Mint(msg.sender, amount0, amount1);
     }
 
     /// @inheritdoc ITokenSwapPair
