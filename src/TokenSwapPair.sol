@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {ITokenSwapPair} from "./interfaces/ITokenSwapPair.sol";
 import {Math} from "./libraries/Math.sol";
@@ -12,11 +13,12 @@ import {ReentrancyGuard} from "./utils/ReentrancyGuard.sol";
 /**
  * @title TokenSwapPair
  * @notice Par AMM de producto constante (`x * y = k`).
- * @dev Fase 3: `mint` (primer depósito + subsequent + MINIMUM_LIQUIDITY).
- *      `swap`/`burn`/`skim` siguen stub (fases 4–5). `_update` TWAP desde fase 2.
+ * @dev Fase 4: `swap` con fee 0.3%, K-check y `nonReentrant`.
+ *      `burn`/`skim` siguen stub (fase 5).
  */
 contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
     using UQ112x112 for uint224;
+    using SafeERC20 for IERC20;
 
     /// @inheritdoc ITokenSwapPair
     uint256 public constant MINIMUM_LIQUIDITY = 1000;
@@ -105,9 +107,61 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
         return (0, 0);
     }
 
-    /// @inheritdoc ITokenSwapPair
-    /// @dev Stub — implementar en fase 4.
-    function swap(uint256, uint256, address, bytes calldata) external nonReentrant {}
+    /**
+     * @inheritdoc ITokenSwapPair
+     * @dev Optimistic transfer → medir `amountIn` → fee 0.3% embebido en K-check
+     *      (`balanceAdj = balance*1000 - amountIn*3` ≥ `r0*r1*1000²`).
+     *      v1: `data` no dispara callback (flash swap fuera de alcance).
+     */
+    function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata)
+        external
+        nonReentrant
+    {
+        if (amount0Out == 0 && amount1Out == 0) {
+            revert InsufficientOutputAmount();
+        }
+
+        uint112 reserve0_ = reserve0;
+        uint112 reserve1_ = reserve1;
+        if (amount0Out >= reserve0_ || amount1Out >= reserve1_) {
+            revert InsufficientLiquidity();
+        }
+
+        uint256 balance0;
+        uint256 balance1;
+        {
+            address token0_ = token0;
+            address token1_ = token1;
+            if (to == token0_ || to == token1_) {
+                revert InvalidTo();
+            }
+            if (amount0Out > 0) {
+                IERC20(token0_).safeTransfer(to, amount0Out);
+            }
+            if (amount1Out > 0) {
+                IERC20(token1_).safeTransfer(to, amount1Out);
+            }
+            balance0 = IERC20(token0_).balanceOf(address(this));
+            balance1 = IERC20(token1_).balanceOf(address(this));
+        }
+
+        uint256 amount0In = balance0 > reserve0_ - amount0Out ? balance0 - (reserve0_ - amount0Out) : 0;
+        uint256 amount1In = balance1 > reserve1_ - amount1Out ? balance1 - (reserve1_ - amount1Out) : 0;
+        if (amount0In == 0 && amount1In == 0) {
+            revert InsufficientInputAmount();
+        }
+
+        {
+            uint256 balance0Adjusted = balance0 * 1000 - amount0In * 3;
+            uint256 balance1Adjusted = balance1 * 1000 - amount1In * 3;
+            if (balance0Adjusted * balance1Adjusted < uint256(reserve0_) * uint256(reserve1_) * 1_000_000) {
+                revert InvalidK();
+            }
+        }
+
+        _update(balance0, balance1, reserve0_, reserve1_);
+        emit Swap(msg.sender, amount0In, amount1In, amount0Out, amount1Out, to);
+    }
 
     /// @inheritdoc ITokenSwapPair
     /// @dev Stub — implementar en fase 5.

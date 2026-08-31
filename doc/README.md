@@ -1,6 +1,6 @@
 # Documentación — Module 06: Constant Product AMM
 
-Índice de la carpeta `doc/`. **Fases 0–3** cerradas (scaffold, TDD, Math/TWAP, mint).
+Índice de la carpeta `doc/`. **Fases 0–4** cerradas (scaffold, TDD, Math/TWAP, mint, swap+K).
 
 | Documento | Contenido |
 |-----------|-----------|
@@ -9,6 +9,6 @@
 | [diagrama-flujo.md](./diagrama-flujo.md) | Flujos mint / swap / burn / Router / TWAP |
 | [flujograma.md](./flujograma.md) | Operativo, K-check, seguridad, pipeline TDD |
 
-**Pair:** `mint` + `_update`/`sync` · LP via `TokenSwapERC20` (lock `MINIMUM_LIQUIDITY` → `address(0)`)  
-**Pendiente:** swap (fase 4), burn/skim (fase 5)  
-**Tests:** 21 PASS · 8 FAIL (swap/burn en rojo TDD)
+**Pair:** `mint` + `swap` (fee 0.3%, K-check, SafeERC20) + `_update`/`sync`  
+**Pendiente:** burn/skim (fase 5)  
+**Tests:** 27 PASS · 2 FAIL (burn en rojo TDD)
