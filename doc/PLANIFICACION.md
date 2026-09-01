@@ -167,7 +167,7 @@ address public immutable token1;
 | **5** | `burn` + `skim` / `sync` | ✅ |
 | **6** | `TokenSwapFactory` + `TokenSwapRouter` (slippage) | ✅ |
 | **7** | Invariant suite + fuzz `bound()` + SWC-AUDIT | ✅ |
-| **8** | Gas snapshot + NatSpec + SafeERC20 hardening | 🔲 |
+| **8** | Gas snapshot + NatSpec + SafeTransfer hardening | ✅ |
 | **UI** | Demo Next.js (swap + add/remove LP) | 🔲 |
 
 ---
@@ -181,6 +181,7 @@ address public immutable token1;
 | Router | `test/TokenSwapRouter.t.sol` | `amountOutMin`, deadline, path 2 tokens |
 | Fuzz | `test/fuzz/TokenSwap.fuzz.t.sol` | Input amounts + slippage con `bound()` |
 | Invariant | `test/invariant/TokenSwap.invariant.t.sol` | `reserve0 * reserve1 >= k` tras secuencias |
+| Gas | `test/gas/TokenSwap.gas.t.sol` | Snapshot e2e mint/swap/burn/skim/sync |
 | UI | `frontend` Vitest | Formularios Zod + roles a11y |
 
 ---
@@ -197,7 +198,9 @@ address public immutable token1;
 - [x] Invariant `reserve0 * reserve1 >= k`
 - [x] Fuzz con `bound()`
 - [x] Auditoría SWC (`doc/SWC-AUDIT.md`)
-- [ ] NatSpec en funciones public/external
+- [x] NatSpec en funciones public/external
+- [x] Gas baseline (`doc/GAS.md` + `.gas-snapshot`)
+- [x] `SafeTransfer` hardened (bubble-revert SWC-104)
 - [ ] Demo frontend (Anvil + swap/LP)
 
 ---

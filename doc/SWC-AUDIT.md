@@ -6,8 +6,8 @@ Verificación de `TokenSwapPair`, `TokenSwapFactory` y `TokenSwapRouter` contra 
 
 **Contratos auditados:** `src/TokenSwapPair.sol`, `src/TokenSwapFactory.sol`, `src/TokenSwapRouter.sol` (+ interfaces / libs)  
 **Fecha:** 2026-09-01  
-**Referencia tests:** `test/TokenSwapPair.t.sol`, `test/TokenSwapFactory.t.sol`, `test/TokenSwapRouter.t.sol`, `test/fuzz/`, `test/invariant/`, `test/attack/`  
-**Referencia monorepo:** [`04-erc721/doc/SWC-AUDIT.md`](../../04-erc721/doc/SWC-AUDIT.md)
+**Referencia tests:** `test/TokenSwapPair.t.sol`, `test/TokenSwapFactory.t.sol`, `test/TokenSwapRouter.t.sol`, `test/fuzz/`, `test/invariant/`, `test/attack/`, `test/gas/`  
+**Gas:** [`GAS.md`](./GAS.md)
 
 ---
 
@@ -29,7 +29,7 @@ Verificación de `TokenSwapPair`, `TokenSwapFactory` y `TokenSwapRouter` contra 
 | Pragma fijo `0.8.24` | ✅ |
 | CEI + `nonReentrant` en mint/swap/burn | ✅ + attack suite |
 | K-check post-swap (fee 0.3%) | ✅ + unit/fuzz/invariant |
-| SafeERC20 en transfers del par | ✅ |
+| SafeTransfer (SWC-104) en transfers del par | ✅ |
 | TWAP en `_update` con delta de timestamp | ✅ |
 | Fuzz ≥ 1000 runs | ✅ `foundry.toml` |
 | Invariantes `k` / balances / LP locked | ✅ `test/invariant/` |
@@ -44,7 +44,7 @@ Verificación de `TokenSwapPair`, `TokenSwapFactory` y `TokenSwapRouter` contra 
 | SWC-101 | Integer Overflow and Underflow | Sí | ✅ | Solidity `0.8.24`; producto `k` en `uint256`; reservas `uint112` |
 | SWC-102 | Outdated Compiler Version | Sí | ✅ | `pragma solidity 0.8.24` + `foundry.toml` |
 | SWC-103 | Floating Pragma | Sí | ✅ | Pragma exacto (sin `^`) |
-| SWC-104 | Unchecked Call Return Value | Sí | ✅ | `SafeERC20` en Pair/Router; tests con tokens estándar |
+| SWC-104 | Unchecked Call Return Value | Sí | ✅ | `SafeTransfer` low-level call + bubble-revert |
 | SWC-105 | Unprotected Ether Withdrawal | No | N/A | Sin ETH / `payable` / `.call{value}` |
 | SWC-106 | Unprotected SELFDESTRUCT | No | N/A | Sin `selfdestruct` |
 | SWC-107 | Reentrancy | Sí | ✅ | `nonReentrant` + CEI; `test/attack/ReentrancyAttack.t.sol` |
@@ -111,10 +111,10 @@ Tokens enviados directamente al par sin `mint` incrementan balances vs reservas 
 |-----------|----------|--------|
 | Custom errors | ✅ | `InvalidK`, `InsufficientLiquidity`, `InsufficientOutputAmount`, … |
 | ReentrancyGuard (EIP-1153) | ✅ | mint / swap / burn |
-| SafeERC20 | ✅ | Pair + Router |
+| SafeTransfer / low-level call | ✅ | `src/libraries/SafeTransfer.sol` (bubble-revert) |
 | K-check fee 0.3% | ✅ | `balance * 1000 - amountIn * 3` |
 | TWAP `_update` | ✅ | `test/TokenSwapPair.Update.t.sol` |
-| NatSpec públicas/externas | Parcial | Fase 8 pendiente |
+| NatSpec públicas/externas | ✅ | Fase 8 |
 | Fuzz ≥ 1000 runs | ✅ | `test/fuzz/TokenSwap.fuzz.t.sol` |
 | Invariantes k / balances / LP | ✅ | `test/invariant/` |
 
@@ -126,7 +126,7 @@ Tokens enviados directamente al par sin `mint` incrementan balances vs reservas 
 |-----|---------|
 | SWC-101 | `testFuzz_getAmountOut_*`, `testFuzz_swap_increasesK`, `testFuzz_firstMint_sqrtGeometry`, `invariant_kProductAtLeastGhost` |
 | SWC-103 | Compilador fijo (build) |
-| SWC-104 | Unit swap/mint/burn con MockERC20; SafeERC20 en Pair |
+| SWC-104 | Unit swap/mint/burn; `SafeTransfer` en Pair/Router |
 | SWC-107 | `test_Attack_reenterMint_duringSwap_*`, `test_Attack_reenterSwap_*`, `test_Attack_reenterBurn_*` |
 | SWC-114 | `testFuzz_router_swap_revertsSlippage`; documental arriba |
 | SWC-116 | `test/TokenSwapPair.Update.t.sol` (TWAP acumulación) |
@@ -140,5 +140,5 @@ Tokens enviados directamente al par sin `mint` incrementan balances vs reservas 
 - [SWC Registry](https://swcregistry.io/)
 - [EIP-1470](https://eips.ethereum.org/EIPS/eip-1470)
 - Uniswap V2 (referencia de diseño constant product)
-- Plan: [`PLANIFICACION.md`](./PLANIFICACION.md)
+- Gas: [`GAS.md`](./GAS.md)
 - Monorepo NFT: [`04-erc721/doc/SWC-AUDIT.md`](../../04-erc721/doc/SWC-AUDIT.md)

@@ -1,0 +1,7 @@
+TokenSwapGasTest:testGas_burn() (gas: 273320)
+TokenSwapGasTest:testGas_createPair() (gas: 2311485)
+TokenSwapGasTest:testGas_firstMint() (gas: 226369)
+TokenSwapGasTest:testGas_skim() (gas: 244311)
+TokenSwapGasTest:testGas_subsequentMint() (gas: 268676)
+TokenSwapGasTest:testGas_swap() (gas: 280602)
+TokenSwapGasTest:testGas_sync() (gas: 241731)

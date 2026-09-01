@@ -2,22 +2,25 @@
 pragma solidity 0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {ITokenSwapPair} from "./interfaces/ITokenSwapPair.sol";
 import {Math} from "./libraries/Math.sol";
+import {SafeTransfer} from "./libraries/SafeTransfer.sol";
 import {UQ112x112} from "./libraries/UQ112x112.sol";
 import {TokenSwapERC20} from "./TokenSwapERC20.sol";
 import {ReentrancyGuard} from "./utils/ReentrancyGuard.sol";
 
 /**
  * @title TokenSwapPair
- * @notice Par AMM de producto constante (`x * y = k`).
- * @dev Fase 5: `burn` + `skim` + `sync` (`_update` TWAP desde fase 2).
+ * @notice Par AMM de producto constante (`x * y = k`) con fee 0.3% y oráculo TWAP.
+ * @dev `mint` / `swap` / `burn` usan `nonReentrant` + `SafeTransfer` en rutas ERC-20.
  */
 contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
     using UQ112x112 for uint224;
-    using SafeERC20 for IERC20;
+    using SafeTransfer for IERC20;
+
+    /// @dev Factor del K-check: `1000**2` (fee 0.3% embebido en balances ajustados).
+    uint256 private constant _K_DENOMINATOR = 1_000_000;
 
     /// @inheritdoc ITokenSwapPair
     uint256 public constant MINIMUM_LIQUIDITY = 1000;
@@ -57,11 +60,7 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
     }
 
     /// @inheritdoc ITokenSwapPair
-    function getReserves()
-        external
-        view
-        returns (uint112 reserve0_, uint112 reserve1_, uint32 blockTimestampLast_)
-    {
+    function getReserves() external view returns (uint112 reserve0_, uint112 reserve1_, uint32 blockTimestampLast_) {
         reserve0_ = reserve0;
         reserve1_ = reserve1;
         blockTimestampLast_ = blockTimestampLast;
@@ -71,14 +70,24 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
      * @inheritdoc ITokenSwapPair
      * @dev Primer mint: `sqrt(amount0 * amount1) - MINIMUM_LIQUIDITY` (lock a `address(0)`).
      *      Subsequent: `min(amount0 * totalSupply / reserve0, amount1 * totalSupply / reserve1)`.
+     * @param to Receptor de los LP tokens acuñados.
+     * @return liquidity Cantidad de LP acuñada.
      */
     function mint(address to) external nonReentrant returns (uint256 liquidity) {
         uint112 reserve0_ = reserve0;
         uint112 reserve1_ = reserve1;
-        uint256 balance0 = IERC20(token0).balanceOf(address(this));
-        uint256 balance1 = IERC20(token1).balanceOf(address(this));
-        uint256 amount0 = balance0 - reserve0_;
-        uint256 amount1 = balance1 - reserve1_;
+        address token0_ = token0;
+        address token1_ = token1;
+
+        uint256 balance0 = IERC20(token0_).balanceOf(address(this));
+        uint256 balance1 = IERC20(token1_).balanceOf(address(this));
+
+        uint256 amount0;
+        uint256 amount1;
+        unchecked {
+            amount0 = balance0 - reserve0_;
+            amount1 = balance1 - reserve1_;
+        }
 
         uint256 supply = totalSupply;
         if (supply == 0) {
@@ -103,19 +112,25 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
     /**
      * @inheritdoc ITokenSwapPair
      * @dev El caller transfiere LP al par antes de llamar. Quema pro-rata y envía token0/token1 a `to`.
+     * @param to Receptor de los tokens subyacentes.
+     * @return amount0 Token0 enviado.
+     * @return amount1 Token1 enviado.
      */
     function burn(address to) external nonReentrant returns (uint256 amount0, uint256 amount1) {
         uint112 reserve0_ = reserve0;
         uint112 reserve1_ = reserve1;
         address token0_ = token0;
         address token1_ = token1;
+
         uint256 balance0 = IERC20(token0_).balanceOf(address(this));
         uint256 balance1 = IERC20(token1_).balanceOf(address(this));
         uint256 liquidity = balanceOf[address(this)];
 
         uint256 supply = totalSupply;
-        amount0 = (liquidity * balance0) / supply;
-        amount1 = (liquidity * balance1) / supply;
+        unchecked {
+            amount0 = (liquidity * balance0) / supply;
+            amount1 = (liquidity * balance1) / supply;
+        }
         if (amount0 == 0 || amount1 == 0) {
             revert InsufficientLiquidity();
         }
@@ -135,11 +150,11 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
      * @dev Optimistic transfer → medir `amountIn` → fee 0.3% embebido en K-check
      *      (`balanceAdj = balance*1000 - amountIn*3` ≥ `r0*r1*1000²`).
      *      v1: `data` no dispara callback (flash swap fuera de alcance).
+     * @param amount0Out Cantidad de token0 a enviar (0 si no aplica).
+     * @param amount1Out Cantidad de token1 a enviar (0 si no aplica).
+     * @param to Receptor de los outputs.
      */
-    function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata)
-        external
-        nonReentrant
-    {
+    function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata) external nonReentrant {
         if (amount0Out == 0 && amount1Out == 0) {
             revert InsufficientOutputAmount();
         }
@@ -152,6 +167,8 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
 
         uint256 balance0;
         uint256 balance1;
+        uint256 amount0In;
+        uint256 amount1In;
         {
             address token0_ = token0;
             address token1_ = token1;
@@ -166,18 +183,18 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
             }
             balance0 = IERC20(token0_).balanceOf(address(this));
             balance1 = IERC20(token1_).balanceOf(address(this));
-        }
 
-        uint256 amount0In = balance0 > reserve0_ - amount0Out ? balance0 - (reserve0_ - amount0Out) : 0;
-        uint256 amount1In = balance1 > reserve1_ - amount1Out ? balance1 - (reserve1_ - amount1Out) : 0;
-        if (amount0In == 0 && amount1In == 0) {
-            revert InsufficientInputAmount();
-        }
+            unchecked {
+                amount0In = balance0 > reserve0_ - amount0Out ? balance0 - (reserve0_ - amount0Out) : 0;
+                amount1In = balance1 > reserve1_ - amount1Out ? balance1 - (reserve1_ - amount1Out) : 0;
+            }
+            if (amount0In == 0 && amount1In == 0) {
+                revert InsufficientInputAmount();
+            }
 
-        {
             uint256 balance0Adjusted = balance0 * 1000 - amount0In * 3;
             uint256 balance1Adjusted = balance1 * 1000 - amount1In * 3;
-            if (balance0Adjusted * balance1Adjusted < uint256(reserve0_) * uint256(reserve1_) * 1_000_000) {
+            if (balance0Adjusted * balance1Adjusted < uint256(reserve0_) * uint256(reserve1_) * _K_DENOMINATOR) {
                 revert InvalidK();
             }
         }
@@ -186,17 +203,34 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
         emit Swap(msg.sender, amount0In, amount1In, amount0Out, amount1Out, to);
     }
 
-    /// @inheritdoc ITokenSwapPair
+    /**
+     * @inheritdoc ITokenSwapPair
+     * @param to Receptor del excedente (`balance − reserva`).
+     */
     function skim(address to) external {
         address token0_ = token0;
         address token1_ = token1;
-        IERC20(token0_).safeTransfer(to, IERC20(token0_).balanceOf(address(this)) - reserve0);
-        IERC20(token1_).safeTransfer(to, IERC20(token1_).balanceOf(address(this)) - reserve1);
+        uint112 reserve0_ = reserve0;
+        uint112 reserve1_ = reserve1;
+
+        uint256 balance0 = IERC20(token0_).balanceOf(address(this));
+        uint256 balance1 = IERC20(token1_).balanceOf(address(this));
+
+        unchecked {
+            if (balance0 > reserve0_) {
+                IERC20(token0_).safeTransfer(to, balance0 - reserve0_);
+            }
+            if (balance1 > reserve1_) {
+                IERC20(token1_).safeTransfer(to, balance1 - reserve1_);
+            }
+        }
     }
 
     /// @inheritdoc ITokenSwapPair
     function sync() external {
-        _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)), reserve0, reserve1);
+        address token0_ = token0;
+        address token1_ = token1;
+        _update(IERC20(token0_).balanceOf(address(this)), IERC20(token1_).balanceOf(address(this)), reserve0, reserve1);
     }
 
     /**
@@ -215,13 +249,11 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
         uint32 blockTimestamp = uint32(block.timestamp % 2 ** 32);
         uint32 timeElapsed;
         unchecked {
-            // Overflow uint32 intencional (wrap de timestamp), igual que Uniswap V2.
             timeElapsed = blockTimestamp - blockTimestampLast;
         }
 
         if (timeElapsed > 0 && reserve0_ != 0 && reserve1_ != 0) {
             unchecked {
-                // + puede overflow; es el diseño del acumulador TWAP.
                 price0CumulativeLast += uint256(UQ112x112.encode(reserve1_).uqdiv(reserve0_)) * timeElapsed;
                 price1CumulativeLast += uint256(UQ112x112.encode(reserve0_).uqdiv(reserve1_)) * timeElapsed;
             }

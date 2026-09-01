@@ -39,7 +39,10 @@ contract TokenSwapFactory is ITokenSwapFactory {
         emit PairCreated(token0, token1, pair, allPairs.length);
     }
 
-    /// @inheritdoc ITokenSwapFactory
+    /**
+     * @notice Número de pares creados.
+     * @return length Cantidad de pares en `allPairs`.
+     */
     function allPairsLength() external view returns (uint256 length) {
         return allPairs.length;
     }

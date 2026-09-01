@@ -23,12 +23,7 @@ contract TokenSwapHandler is Test {
     /// @notice Producto `reserve0 * reserve1` tras la última operación exitosa del handler.
     uint256 public ghostK;
 
-    constructor(
-        ITokenSwapPair pair_,
-        TokenSwapRouter router_,
-        MockERC20 token0_,
-        MockERC20 token1_
-    ) {
+    constructor(ITokenSwapPair pair_, TokenSwapRouter router_, MockERC20 token0_, MockERC20 token1_) {
         pair = pair_;
         router = router_;
         token0 = token0_;
@@ -56,16 +51,7 @@ contract TokenSwapHandler is Test {
         vm.startPrank(actor);
         token0.approve(address(router), amount0);
         token1.approve(address(router), amount1);
-        router.addLiquidity(
-            address(token0),
-            address(token1),
-            amount0,
-            amount1,
-            0,
-            0,
-            actor,
-            block.timestamp + 1 hours
-        );
+        router.addLiquidity(address(token0), address(token1), amount0, amount1, 0, 0, actor, block.timestamp + 1 hours);
         vm.stopPrank();
 
         _syncGhostK();
@@ -73,24 +59,26 @@ contract TokenSwapHandler is Test {
 
     function swapToken0For1(uint256 actorSeed, uint256 amountIn) external {
         (uint112 r0, uint112 r1,) = pair.getReserves();
-        if (r0 == 0 || r1 == 0) return;
+        if (r0 == 0 || r1 == 0) {
+            return;
+        }
 
         address actor = actorsList[actorSeed % actorsList.length];
         amountIn = bound(amountIn, 1, uint256(r0) / 20);
-        if (amountIn == 0) return;
+        if (amountIn == 0) {
+            return;
+        }
 
         uint256 kBefore = uint256(r0) * r1;
         uint256[] memory amounts = router.getAmountsOut(amountIn, _path(address(token0), address(token1)));
-        if (amounts[1] == 0 || amounts[1] >= r1) return;
+        if (amounts[1] == 0 || amounts[1] >= r1) {
+            return;
+        }
 
         vm.startPrank(actor);
         token0.approve(address(router), amountIn);
         router.swapExactTokensForTokens(
-            amountIn,
-            0,
-            _path(address(token0), address(token1)),
-            actor,
-            block.timestamp + 1 hours
+            amountIn, 0, _path(address(token0), address(token1)), actor, block.timestamp + 1 hours
         );
         vm.stopPrank();
 
@@ -102,24 +90,26 @@ contract TokenSwapHandler is Test {
 
     function swapToken1For0(uint256 actorSeed, uint256 amountIn) external {
         (uint112 r0, uint112 r1,) = pair.getReserves();
-        if (r0 == 0 || r1 == 0) return;
+        if (r0 == 0 || r1 == 0) {
+            return;
+        }
 
         address actor = actorsList[actorSeed % actorsList.length];
         amountIn = bound(amountIn, 1, uint256(r1) / 20);
-        if (amountIn == 0) return;
+        if (amountIn == 0) {
+            return;
+        }
 
         uint256 kBefore = uint256(r0) * r1;
         uint256[] memory amounts = router.getAmountsOut(amountIn, _path(address(token1), address(token0)));
-        if (amounts[1] == 0 || amounts[1] >= r0) return;
+        if (amounts[1] == 0 || amounts[1] >= r0) {
+            return;
+        }
 
         vm.startPrank(actor);
         token1.approve(address(router), amountIn);
         router.swapExactTokensForTokens(
-            amountIn,
-            0,
-            _path(address(token1), address(token0)),
-            actor,
-            block.timestamp + 1 hours
+            amountIn, 0, _path(address(token1), address(token0)), actor, block.timestamp + 1 hours
         );
         vm.stopPrank();
 
@@ -132,21 +122,15 @@ contract TokenSwapHandler is Test {
     function burnLiquidity(uint256 actorSeed, uint256 liquidityShare) external {
         address actor = actorsList[actorSeed % actorsList.length];
         uint256 lpBal = IERC20(address(pair)).balanceOf(actor);
-        if (lpBal == 0) return;
+        if (lpBal == 0) {
+            return;
+        }
 
         liquidityShare = bound(liquidityShare, 1, lpBal);
 
         vm.startPrank(actor);
         IERC20(address(pair)).approve(address(router), liquidityShare);
-        router.removeLiquidity(
-            address(token0),
-            address(token1),
-            liquidityShare,
-            0,
-            0,
-            actor,
-            block.timestamp + 1 hours
-        );
+        router.removeLiquidity(address(token0), address(token1), liquidityShare, 0, 0, actor, block.timestamp + 1 hours);
         vm.stopPrank();
 
         _syncGhostK();

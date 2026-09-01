@@ -80,11 +80,7 @@ contract TokenSwapFuzzTest is Test {
         vm.startPrank(trader);
         token0.approve(address(router), amountIn);
         uint256[] memory amounts = router.swapExactTokensForTokens(
-            amountIn,
-            amountOutMin,
-            _path(address(token0), address(token1)),
-            trader,
-            block.timestamp + 1 hours
+            amountIn, amountOutMin, _path(address(token0), address(token1)), trader, block.timestamp + 1 hours
         );
         vm.stopPrank();
 
@@ -121,9 +117,8 @@ contract TokenSwapFuzzTest is Test {
         vm.startPrank(lp);
         tA.approve(address(freshRouter), amount0);
         tB.approve(address(freshRouter), amount1);
-        (,, uint256 liquidity) = freshRouter.addLiquidity(
-            address(tA), address(tB), amount0, amount1, 0, 0, lp, block.timestamp + 1 hours
-        );
+        (,, uint256 liquidity) =
+            freshRouter.addLiquidity(address(tA), address(tB), amount0, amount1, 0, 0, lp, block.timestamp + 1 hours);
         vm.stopPrank();
 
         assertEq(liquidity, expected);
@@ -139,7 +134,9 @@ contract TokenSwapFuzzTest is Test {
 
         uint256 kBefore = uint256(r0) * r1;
         uint256 amountOut = router.getAmountOut(amountIn, r0, r1);
-        if (amountOut == 0 || amountOut >= r1) return;
+        if (amountOut == 0 || amountOut >= r1) {
+            return;
+        }
 
         vm.startPrank(trader);
         token0.transfer(address(pair), amountIn);
@@ -164,11 +161,7 @@ contract TokenSwapFuzzTest is Test {
         token0.approve(address(router), amountIn);
         vm.expectRevert(ITokenSwapRouter.InsufficientOutputAmount.selector);
         router.swapExactTokensForTokens(
-            amountIn,
-            expected[1] + bump,
-            _path(address(token0), address(token1)),
-            trader,
-            block.timestamp + 1 hours
+            amountIn, expected[1] + bump, _path(address(token0), address(token1)), trader, block.timestamp + 1 hours
         );
         vm.stopPrank();
     }
@@ -178,14 +171,7 @@ contract TokenSwapFuzzTest is Test {
         token0.approve(address(router), amount0);
         token1.approve(address(router), amount1);
         router.addLiquidity(
-            address(token0),
-            address(token1),
-            amount0,
-            amount1,
-            0,
-            0,
-            provider,
-            block.timestamp + 1 hours
+            address(token0), address(token1), amount0, amount1, 0, 0, provider, block.timestamp + 1 hours
         );
         vm.stopPrank();
     }
