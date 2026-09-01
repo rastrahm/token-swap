@@ -13,8 +13,7 @@ import {ReentrancyGuard} from "./utils/ReentrancyGuard.sol";
 /**
  * @title TokenSwapPair
  * @notice Par AMM de producto constante (`x * y = k`).
- * @dev Fase 4: `swap` con fee 0.3%, K-check y `nonReentrant`.
- *      `burn`/`skim` siguen stub (fase 5).
+ * @dev Fase 5: `burn` + `skim` + `sync` (`_update` TWAP desde fase 2).
  */
 contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
     using UQ112x112 for uint224;
@@ -101,10 +100,34 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
         emit Mint(msg.sender, amount0, amount1);
     }
 
-    /// @inheritdoc ITokenSwapPair
-    /// @dev Stub — implementar en fase 5.
-    function burn(address) external nonReentrant returns (uint256 amount0, uint256 amount1) {
-        return (0, 0);
+    /**
+     * @inheritdoc ITokenSwapPair
+     * @dev El caller transfiere LP al par antes de llamar. Quema pro-rata y envía token0/token1 a `to`.
+     */
+    function burn(address to) external nonReentrant returns (uint256 amount0, uint256 amount1) {
+        uint112 reserve0_ = reserve0;
+        uint112 reserve1_ = reserve1;
+        address token0_ = token0;
+        address token1_ = token1;
+        uint256 balance0 = IERC20(token0_).balanceOf(address(this));
+        uint256 balance1 = IERC20(token1_).balanceOf(address(this));
+        uint256 liquidity = balanceOf[address(this)];
+
+        uint256 supply = totalSupply;
+        amount0 = (liquidity * balance0) / supply;
+        amount1 = (liquidity * balance1) / supply;
+        if (amount0 == 0 || amount1 == 0) {
+            revert InsufficientLiquidity();
+        }
+
+        _burn(address(this), liquidity);
+        IERC20(token0_).safeTransfer(to, amount0);
+        IERC20(token1_).safeTransfer(to, amount1);
+
+        balance0 = IERC20(token0_).balanceOf(address(this));
+        balance1 = IERC20(token1_).balanceOf(address(this));
+        _update(balance0, balance1, reserve0_, reserve1_);
+        emit Burn(msg.sender, amount0, amount1, to);
     }
 
     /**
@@ -164,8 +187,12 @@ contract TokenSwapPair is ITokenSwapPair, TokenSwapERC20, ReentrancyGuard {
     }
 
     /// @inheritdoc ITokenSwapPair
-    /// @dev Stub — implementar en fase 5.
-    function skim(address) external {}
+    function skim(address to) external {
+        address token0_ = token0;
+        address token1_ = token1;
+        IERC20(token0_).safeTransfer(to, IERC20(token0_).balanceOf(address(this)) - reserve0);
+        IERC20(token1_).safeTransfer(to, IERC20(token1_).balanceOf(address(this)) - reserve1);
+    }
 
     /// @inheritdoc ITokenSwapPair
     function sync() external {
