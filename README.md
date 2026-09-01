@@ -2,7 +2,7 @@
 
 AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y oráculo TWAP. Solidity `0.8.24` + Foundry.
 
-**Estado:** Fases **0–6** ✅ (Pair + Factory + Router). Fases 7–8 y demo Next.js pendientes.
+**Estado:** Fases **0–7** ✅ (Pair + Factory + Router + invariant/fuzz/SWC). Fase 8 y demo Next.js pendientes.
 
 ---
 
@@ -27,6 +27,7 @@ AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y orá
 | [doc/diagrama-flujo.md](./doc/diagrama-flujo.md) | Flujos mint / swap / burn |
 | [doc/diagrama-clases.md](./doc/diagrama-clases.md) | UML de contratos |
 | [doc/flujograma.md](./doc/flujograma.md) | Flujograma operativo y K-check |
+| [doc/SWC-AUDIT.md](./doc/SWC-AUDIT.md) | Auditoría SWC-100–136 y mapeo a tests |
 
 ---
 
@@ -56,7 +57,7 @@ src/TokenSwapFactory.sol
 src/TokenSwapRouter.sol      # add/remove liquidity + swap (slippage)
 src/TokenSwapERC20.sol
 src/TokenSwapPair.sol
-test/                        # Pair, Factory, Router, Math, Update
+test/                        # Pair, Factory, Router, fuzz, invariant, attack
 doc/                 # Plan y diagramas
 lib/                 # Dependencias (gitignored)
 ```

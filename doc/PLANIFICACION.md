@@ -166,7 +166,7 @@ address public immutable token1;
 | **4** | `swap` + fee 0.3% + K-check + ReentrancyGuard | ✅ |
 | **5** | `burn` + `skim` / `sync` | ✅ |
 | **6** | `TokenSwapFactory` + `TokenSwapRouter` (slippage) | ✅ |
-| **7** | Invariant suite + fuzz `bound()` | 🔲 |
+| **7** | Invariant suite + fuzz `bound()` + SWC-AUDIT | ✅ |
 | **8** | Gas snapshot + NatSpec + SafeERC20 hardening | 🔲 |
 | **UI** | Demo Next.js (swap + add/remove LP) | 🔲 |
 
@@ -194,8 +194,9 @@ address public immutable token1;
 - [x] CEI + `nonReentrant` en `swap` / `mint` / `burn`
 - [x] Custom errors (sin strings en `require`)
 - [x] SafeERC20 / transfers con revert explícito
-- [ ] Invariant `reserve0 * reserve1 >= k`
-- [ ] Fuzz con `bound()`
+- [x] Invariant `reserve0 * reserve1 >= k`
+- [x] Fuzz con `bound()`
+- [x] Auditoría SWC (`doc/SWC-AUDIT.md`)
 - [ ] NatSpec en funciones public/external
 - [ ] Demo frontend (Anvil + swap/LP)
 
