@@ -1,6 +1,6 @@
 # Documentación — Module 06: Constant Product AMM
 
-Índice de la carpeta `doc/`. **Fases 0–5** cerradas (Pair core: mint, swap, burn, skim, sync).
+Índice de la carpeta `doc/`. **Fases 0–6** cerradas (Pair + Factory + Router).
 
 | Documento | Contenido |
 |-----------|-----------|
@@ -9,6 +9,6 @@
 | [diagrama-flujo.md](./diagrama-flujo.md) | Flujos mint / swap / burn / Router / TWAP |
 | [flujograma.md](./flujograma.md) | Operativo, K-check, seguridad, pipeline TDD |
 
-**Pair:** `mint` · `swap` (0.3% + K) · `burn` · `skim` · `sync` / TWAP  
-**Pendiente:** Factory + Router (fase 6)  
-**Tests:** `forge test` → **30 PASS**
+**Contratos:** `TokenSwapPair` · `TokenSwapFactory` · `TokenSwapRouter`  
+**Pendiente:** invariant/fuzz (fase 7), gas/NatSpec (fase 8)  
+**Tests:** `forge test` → **41 PASS**

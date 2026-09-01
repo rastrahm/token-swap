@@ -1,6 +1,6 @@
 # Planificación — Module 06: Constant Product AMM (Token Swap)
 
-**Estado:** Fases **0–5** ✅ · fases **6–8** + demo Next.js pendientes.
+**Estado:** Fases **0–6** ✅ · fases **7–8** + demo Next.js pendientes.
 
 ## 1. Objetivo del proyecto
 
@@ -165,7 +165,7 @@ address public immutable token1;
 | **3** | `mint` (primer depósito + subsequent) + MINIMUM_LIQUIDITY | ✅ |
 | **4** | `swap` + fee 0.3% + K-check + ReentrancyGuard | ✅ |
 | **5** | `burn` + `skim` / `sync` | ✅ |
-| **6** | `TokenSwapFactory` + `TokenSwapRouter` (slippage) | 🔲 |
+| **6** | `TokenSwapFactory` + `TokenSwapRouter` (slippage) | ✅ |
 | **7** | Invariant suite + fuzz `bound()` | 🔲 |
 | **8** | Gas snapshot + NatSpec + SafeERC20 hardening | 🔲 |
 | **UI** | Demo Next.js (swap + add/remove LP) | 🔲 |
