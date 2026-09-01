@@ -10,7 +10,7 @@ import {TokenSwapPair} from "../src/TokenSwapPair.sol";
 /**
  * @title TokenSwapPairTest
  * @notice Suite TDD del par: mint / swap / burn / K-check.
- * @dev Mint + swap verdes (fases 3–4). Burn en rojo hasta fase 5.
+ * @dev Mint / swap / burn verdes (fases 3–5).
  */
 contract TokenSwapPairTest is Test {
     uint256 internal constant MINIMUM_LIQUIDITY = 1000;
@@ -295,6 +295,35 @@ contract TokenSwapPairTest is Test {
         vm.prank(lp);
         vm.expectRevert(ITokenSwapPair.InsufficientLiquidity.selector);
         pair.burn(lp);
+    }
+
+    /**
+     * @notice `skim` retira el excedente (balance − reserva) a `to`.
+     */
+    function test_skim_transfersExcessToRecipient() public {
+        _addLiquidity(lp, LIQ0, LIQ1);
+
+        uint256 excess0 = 5 ether;
+        uint256 excess1 = 7 ether;
+        token0.mint(trader, excess0);
+        token1.mint(trader, excess1);
+
+        vm.startPrank(trader);
+        token0.transfer(address(pair), excess0);
+        token1.transfer(address(pair), excess1);
+        vm.stopPrank();
+
+        uint256 trader0Before = token0.balanceOf(trader);
+        uint256 trader1Before = token1.balanceOf(trader);
+
+        pair.skim(trader);
+
+        assertEq(token0.balanceOf(trader), trader0Before + excess0);
+        assertEq(token1.balanceOf(trader), trader1Before + excess1);
+
+        (uint112 r0, uint112 r1,) = pair.getReserves();
+        assertEq(token0.balanceOf(address(pair)), r0);
+        assertEq(token1.balanceOf(address(pair)), r1);
     }
 
     // -------------------------------------------------------------------------
