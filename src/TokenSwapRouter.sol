@@ -2,18 +2,19 @@
 pragma solidity 0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {ITokenSwapFactory} from "./interfaces/ITokenSwapFactory.sol";
 import {ITokenSwapPair} from "./interfaces/ITokenSwapPair.sol";
 import {ITokenSwapRouter} from "./interfaces/ITokenSwapRouter.sol";
+import {SafeTransfer} from "./libraries/SafeTransfer.sol";
 
 /**
  * @title TokenSwapRouter
  * @notice Router v1: liquidez y swap directo (path de 2 tokens) con slippage y deadline.
+ * @dev Usa `SafeTransfer` en lugar de OZ `SafeERC20` para menor overhead en transfers.
  */
 contract TokenSwapRouter is ITokenSwapRouter {
-    using SafeERC20 for IERC20;
+    using SafeTransfer for IERC20;
 
     /// @inheritdoc ITokenSwapRouter
     address public immutable factory;
@@ -29,6 +30,10 @@ contract TokenSwapRouter is ITokenSwapRouter {
         factory = factory_;
     }
 
+    /**
+     * @notice Revierte si `block.timestamp > deadline`.
+     * @param deadline Timestamp Unix máximo permitido.
+     */
     modifier ensure(uint256 deadline) {
         if (block.timestamp > deadline) {
             revert Expired();
@@ -37,26 +42,8 @@ contract TokenSwapRouter is ITokenSwapRouter {
     }
 
     /// @inheritdoc ITokenSwapRouter
-    function quote(uint256 amountA, uint256 reserveA, uint256 reserveB)
-        external
-        pure
-        returns (uint256 amountB)
-    {
+    function quote(uint256 amountA, uint256 reserveA, uint256 reserveB) external pure returns (uint256 amountB) {
         amountB = _quote(amountA, reserveA, reserveB);
-    }
-
-    function _quote(uint256 amountA, uint256 reserveA, uint256 reserveB)
-        private
-        pure
-        returns (uint256 amountB)
-    {
-        if (amountA == 0) {
-            revert InsufficientOutputAmount();
-        }
-        if (reserveA == 0 || reserveB == 0) {
-            revert ITokenSwapPair.InsufficientLiquidity();
-        }
-        amountB = (amountA * reserveB) / reserveA;
     }
 
     /// @inheritdoc ITokenSwapRouter
@@ -68,27 +55,8 @@ contract TokenSwapRouter is ITokenSwapRouter {
         amountOut = _getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
-    function _getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)
-        private
-        pure
-        returns (uint256 amountOut)
-    {
-        if (amountIn == 0) {
-            revert InsufficientOutputAmount();
-        }
-        if (reserveIn == 0 || reserveOut == 0) {
-            revert ITokenSwapPair.InsufficientLiquidity();
-        }
-        uint256 amountInWithFee = amountIn * 997;
-        amountOut = (amountInWithFee * reserveOut) / (reserveIn * 1000 + amountInWithFee);
-    }
-
     /// @inheritdoc ITokenSwapRouter
-    function getAmountsOut(uint256 amountIn, address[] calldata path)
-        external
-        view
-        returns (uint256[] memory amounts)
-    {
+    function getAmountsOut(uint256 amountIn, address[] calldata path) external view returns (uint256[] memory amounts) {
         if (path.length != 2) {
             revert InvalidPath();
         }
@@ -112,28 +80,6 @@ contract TokenSwapRouter is ITokenSwapRouter {
             revert ZeroAddress();
         }
         return _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, to);
-    }
-
-    function _addLiquidity(
-        address tokenA,
-        address tokenB,
-        uint256 amountADesired,
-        uint256 amountBDesired,
-        uint256 amountAMin,
-        uint256 amountBMin,
-        address to
-    ) private returns (uint256 amountA, uint256 amountB, uint256 liquidity) {
-        (amountA, amountB) =
-            _quoteLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
-
-        address pair = _pairFor(tokenA, tokenB);
-        _transferFrom(tokenA, pair, amountA);
-        _transferFrom(tokenB, pair, amountB);
-        liquidity = ITokenSwapPair(pair).mint(to);
-    }
-
-    function _transferFrom(address token, address to, uint256 amount) private {
-        IERC20(token).safeTransferFrom(msg.sender, to, amount);
     }
 
     /// @inheritdoc ITokenSwapRouter
@@ -197,7 +143,84 @@ contract TokenSwapRouter is ITokenSwapRouter {
     }
 
     /**
+     * @notice Cotiza `amountB` proporcional a reservas (sin fee).
+     * @param amountA Cantidad de A.
+     * @param reserveA Reserva de A.
+     * @param reserveB Reserva de B.
+     * @return amountB Cantidad equivalente de B.
+     */
+    function _quote(uint256 amountA, uint256 reserveA, uint256 reserveB) private pure returns (uint256 amountB) {
+        if (amountA == 0) {
+            revert InsufficientOutputAmount();
+        }
+        if (reserveA == 0 || reserveB == 0) {
+            revert ITokenSwapPair.InsufficientLiquidity();
+        }
+        amountB = (amountA * reserveB) / reserveA;
+    }
+
+    /**
+     * @notice Output de swap con fee 0.3% (`997/1000`).
+     * @param amountIn Input.
+     * @param reserveIn Reserva del token de entrada.
+     * @param reserveOut Reserva del token de salida.
+     * @return amountOut Output esperado.
+     */
+    function _getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)
+        private
+        pure
+        returns (uint256 amountOut)
+    {
+        if (amountIn == 0) {
+            revert InsufficientOutputAmount();
+        }
+        if (reserveIn == 0 || reserveOut == 0) {
+            revert ITokenSwapPair.InsufficientLiquidity();
+        }
+        uint256 amountInWithFee = amountIn * 997;
+        amountOut = (amountInWithFee * reserveOut) / (reserveIn * 1000 + amountInWithFee);
+    }
+
+    /**
+     * @notice Deposita tokens en el par y acuña LP a `to`.
+     * @param tokenA Primer token del par.
+     * @param tokenB Segundo token del par.
+     * @param amountADesired Máximo de A.
+     * @param amountBDesired Máximo de B.
+     * @param amountAMin Slippage mínimo A.
+     * @param amountBMin Slippage mínimo B.
+     * @param to Receptor de LP.
+     * @return amountA A depositado.
+     * @return amountB B depositado.
+     * @return liquidity LP acuñado.
+     */
+    function _addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 amountADesired,
+        uint256 amountBDesired,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to
+    ) private returns (uint256 amountA, uint256 amountB, uint256 liquidity) {
+        (amountA, amountB) = _quoteLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
+
+        address pair = _pairFor(tokenA, tokenB);
+        IERC20(tokenA).safeTransferFrom(msg.sender, pair, amountA);
+        IERC20(tokenB).safeTransferFrom(msg.sender, pair, amountB);
+        liquidity = ITokenSwapPair(pair).mint(to);
+    }
+
+    /**
      * @notice Calcula cantidades óptimas de liquidez según reservas actuales.
+     * @param tokenA Primer token.
+     * @param tokenB Segundo token.
+     * @param amountADesired Máximo de A.
+     * @param amountBDesired Máximo de B.
+     * @param amountAMin Slippage mínimo A.
+     * @param amountBMin Slippage mínimo B.
+     * @return amountA A a depositar.
+     * @return amountB B a depositar.
      */
     function _quoteLiquidity(
         address tokenA,
@@ -213,8 +236,7 @@ contract TokenSwapRouter is ITokenSwapRouter {
 
         (uint256 reserveA, uint256 reserveB) = _getReserves(tokenA, tokenB);
         if (reserveA == 0 && reserveB == 0) {
-            (amountA, amountB) = (amountADesired, amountBDesired);
-            return (amountA, amountB);
+            return (amountADesired, amountBDesired);
         }
 
         uint256 amountBOptimal = _quote(amountADesired, reserveA, reserveB);
@@ -235,6 +257,13 @@ contract TokenSwapRouter is ITokenSwapRouter {
         }
     }
 
+    /**
+     * @notice Output de swap leyendo reservas del par.
+     * @param tokenIn Token de entrada.
+     * @param tokenOut Token de salida.
+     * @param amountIn Input.
+     * @return amountOut Output esperado.
+     */
     function _getAmountOutPair(address tokenIn, address tokenOut, uint256 amountIn)
         private
         view
@@ -244,17 +273,26 @@ contract TokenSwapRouter is ITokenSwapRouter {
         amountOut = _getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
-    function _getReserves(address tokenA, address tokenB)
-        private
-        view
-        returns (uint256 reserveA, uint256 reserveB)
-    {
+    /**
+     * @notice Reservas del par ordenadas como (`tokenA`, `tokenB`).
+     * @param tokenA Primer token.
+     * @param tokenB Segundo token.
+     * @return reserveA Reserva de A.
+     * @return reserveB Reserva de B.
+     */
+    function _getReserves(address tokenA, address tokenB) private view returns (uint256 reserveA, uint256 reserveB) {
         address pair = _pairFor(tokenA, tokenB);
         (address token0,) = _sortTokens(tokenA, tokenB);
         (uint112 reserve0, uint112 reserve1,) = ITokenSwapPair(pair).getReserves();
         (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
+    /**
+     * @notice Resuelve el par; revierte si no existe.
+     * @param tokenA Primer token.
+     * @param tokenB Segundo token.
+     * @return pair Dirección del par.
+     */
     function _pairFor(address tokenA, address tokenB) private view returns (address pair) {
         pair = ITokenSwapFactory(factory).getPair(tokenA, tokenB);
         if (pair == address(0)) {
@@ -262,11 +300,14 @@ contract TokenSwapRouter is ITokenSwapRouter {
         }
     }
 
-    function _sortTokens(address tokenA, address tokenB)
-        private
-        pure
-        returns (address token0, address token1)
-    {
+    /**
+     * @notice Ordena tokens por dirección (`token0 < token1`).
+     * @param tokenA Primer token.
+     * @param tokenB Segundo token.
+     * @return token0 Dirección menor.
+     * @return token1 Dirección mayor.
+     */
+    function _sortTokens(address tokenA, address tokenB) private pure returns (address token0, address token1) {
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
     }
 }

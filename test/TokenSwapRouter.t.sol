@@ -55,16 +55,8 @@ contract TokenSwapRouterTest is Test {
         token0.approve(address(router), LIQ0);
         token1.approve(address(router), LIQ1);
 
-        (uint256 amountA, uint256 amountB, uint256 liquidity) = router.addLiquidity(
-            address(token0),
-            address(token1),
-            LIQ0,
-            LIQ1,
-            LIQ0,
-            LIQ1,
-            lp,
-            block.timestamp + 1 hours
-        );
+        (uint256 amountA, uint256 amountB, uint256 liquidity) =
+            router.addLiquidity(address(token0), address(token1), LIQ0, LIQ1, LIQ0, LIQ1, lp, block.timestamp + 1 hours);
         vm.stopPrank();
 
         assertEq(amountA, LIQ0);
@@ -82,11 +74,7 @@ contract TokenSwapRouterTest is Test {
         vm.startPrank(trader);
         token0.approve(address(router), SWAP_IN);
         uint256[] memory amounts = router.swapExactTokensForTokens(
-            SWAP_IN,
-            expected[1],
-            _path(address(token0), address(token1)),
-            trader,
-            block.timestamp + 1 hours
+            SWAP_IN, expected[1], _path(address(token0), address(token1)), trader, block.timestamp + 1 hours
         );
         vm.stopPrank();
 
@@ -104,11 +92,7 @@ contract TokenSwapRouterTest is Test {
         token0.approve(address(router), SWAP_IN);
         vm.expectRevert(ITokenSwapRouter.InsufficientOutputAmount.selector);
         router.swapExactTokensForTokens(
-            SWAP_IN,
-            expected[1] + 1,
-            _path(address(token0), address(token1)),
-            trader,
-            block.timestamp + 1 hours
+            SWAP_IN, expected[1] + 1, _path(address(token0), address(token1)), trader, block.timestamp + 1 hours
         );
         vm.stopPrank();
     }
@@ -120,11 +104,7 @@ contract TokenSwapRouterTest is Test {
         token0.approve(address(router), SWAP_IN);
         vm.expectRevert(ITokenSwapRouter.Expired.selector);
         router.swapExactTokensForTokens(
-            SWAP_IN,
-            0,
-            _path(address(token0), address(token1)),
-            trader,
-            block.timestamp - 1
+            SWAP_IN, 0, _path(address(token0), address(token1)), trader, block.timestamp - 1
         );
         vm.stopPrank();
     }
@@ -138,13 +118,7 @@ contract TokenSwapRouterTest is Test {
         vm.startPrank(trader);
         token0.approve(address(router), SWAP_IN);
         vm.expectRevert(ITokenSwapRouter.InvalidPath.selector);
-        router.swapExactTokensForTokens(
-            SWAP_IN,
-            0,
-            badPath,
-            trader,
-            block.timestamp + 1 hours
-        );
+        router.swapExactTokensForTokens(SWAP_IN, 0, badPath, trader, block.timestamp + 1 hours);
         vm.stopPrank();
     }
 
@@ -157,15 +131,8 @@ contract TokenSwapRouterTest is Test {
 
         vm.startPrank(lp);
         IERC20(pair).approve(address(router), lpBalance);
-        (uint256 amountA, uint256 amountB) = router.removeLiquidity(
-            address(token0),
-            address(token1),
-            lpBalance,
-            0,
-            0,
-            lp,
-            block.timestamp + 1 hours
-        );
+        (uint256 amountA, uint256 amountB) =
+            router.removeLiquidity(address(token0), address(token1), lpBalance, 0, 0, lp, block.timestamp + 1 hours);
         vm.stopPrank();
 
         assertGt(amountA, 0);
@@ -183,14 +150,7 @@ contract TokenSwapRouterTest is Test {
         token1.approve(address(router), 100 ether);
         vm.expectRevert(ITokenSwapRouter.InsufficientBAmount.selector);
         router.addLiquidity(
-            address(token0),
-            address(token1),
-            100 ether,
-            100 ether,
-            0,
-            101 ether,
-            trader,
-            block.timestamp + 1 hours
+            address(token0), address(token1), 100 ether, 100 ether, 0, 101 ether, trader, block.timestamp + 1 hours
         );
         vm.stopPrank();
     }
@@ -200,14 +160,7 @@ contract TokenSwapRouterTest is Test {
         token0.approve(address(router), amount0);
         token1.approve(address(router), amount1);
         router.addLiquidity(
-            address(token0),
-            address(token1),
-            amount0,
-            amount1,
-            amount0,
-            amount1,
-            provider,
-            block.timestamp + 1 hours
+            address(token0), address(token1), amount0, amount1, amount0, amount1, provider, block.timestamp + 1 hours
         );
         vm.stopPrank();
     }

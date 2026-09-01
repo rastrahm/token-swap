@@ -116,8 +116,7 @@ contract TokenSwapPairTest is Test {
         uint256 supplyBefore = pair.totalSupply();
         (uint112 r0, uint112 r1,) = pair.getReserves();
 
-        uint256 expected =
-            _min((add0 * supplyBefore) / uint256(r0), (add1 * supplyBefore) / uint256(r1));
+        uint256 expected = _min((add0 * supplyBefore) / uint256(r0), (add1 * supplyBefore) / uint256(r1));
 
         uint256 lpBefore = pair.balanceOf(lp);
 

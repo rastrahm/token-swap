@@ -46,14 +46,7 @@ contract TokenSwapInvariantTest is StdInvariant, Test {
         token0.approve(address(router), 1_000 ether);
         token1.approve(address(router), 1_000 ether);
         router.addLiquidity(
-            address(token0),
-            address(token1),
-            1_000 ether,
-            1_000 ether,
-            0,
-            0,
-            lp,
-            block.timestamp + 1 days
+            address(token0), address(token1), 1_000 ether, 1_000 ether, 0, 0, lp, block.timestamp + 1 days
         );
         vm.stopPrank();
         handler.sync();
@@ -73,7 +66,9 @@ contract TokenSwapInvariantTest is StdInvariant, Test {
     /// @notice Tras swaps el producto no cae por debajo del ghostK (fee 0.3% ⇒ k no decrece en swap).
     function invariant_kProductAtLeastGhost() public view {
         (uint112 r0, uint112 r1,) = pair.getReserves();
-        if (r0 == 0 || r1 == 0) return;
+        if (r0 == 0 || r1 == 0) {
+            return;
+        }
         assertGe(uint256(r0) * r1, handler.ghostK());
     }
 
@@ -92,7 +87,9 @@ contract TokenSwapInvariantTest is StdInvariant, Test {
     /// @notice ghostK refleja el producto actual de reservas.
     function invariant_ghostKMatchesReserves() public view {
         (uint112 r0, uint112 r1,) = pair.getReserves();
-        if (r0 == 0 || r1 == 0) return;
+        if (r0 == 0 || r1 == 0) {
+            return;
+        }
         assertEq(uint256(r0) * r1, handler.ghostK());
     }
 }

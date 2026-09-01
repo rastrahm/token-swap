@@ -2,7 +2,7 @@
 
 AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y oráculo TWAP. Solidity `0.8.24` + Foundry.
 
-**Estado:** Fases **0–7** ✅ (Pair + Factory + Router + invariant/fuzz/SWC). Fase 8 y demo Next.js pendientes.
+**Estado:** Fases **0–8** ✅ (contratos + seguridad + gas). Demo Next.js pendiente.
 
 ---
 
@@ -28,6 +28,7 @@ AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y orá
 | [doc/diagrama-clases.md](./doc/diagrama-clases.md) | UML de contratos |
 | [doc/flujograma.md](./doc/flujograma.md) | Flujograma operativo y K-check |
 | [doc/SWC-AUDIT.md](./doc/SWC-AUDIT.md) | Auditoría SWC-100–136 y mapeo a tests |
+| [doc/GAS.md](./doc/GAS.md) | Gas report baseline y optimizaciones |
 
 ---
 
@@ -50,7 +51,7 @@ forge test
 
 ```
 src/interfaces/      # ITokenSwapPair, Factory, Router
-src/libraries/       # Math.sqrt, UQ112x112 (TWAP)
+src/libraries/       # Math.sqrt, UQ112x112 (TWAP), SafeTransfer
 src/mocks/           # MockERC20 (tests / Anvil)
 src/utils/           # ReentrancyGuard (EIP-1153)
 src/TokenSwapFactory.sol
@@ -69,6 +70,7 @@ lib/                 # Dependencias (gitignored)
 ```shell
 forge build
 forge test
-forge test --fuzz-runs 1000
+forge snapshot --match-contract TokenSwapGasTest
+forge test --gas-report
 forge fmt
 ```
