@@ -2,7 +2,7 @@
 
 AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y oráculo TWAP. Solidity `0.8.24` + Foundry.
 
-**Estado:** Fases **0–5** ✅ (Pair core completo). Fases 6–8 y demo Next.js pendientes.
+**Estado:** Fases **0–6** ✅ (Pair + Factory + Router). Fases 7–8 y demo Next.js pendientes.
 
 ---
 
@@ -52,9 +52,11 @@ src/interfaces/      # ITokenSwapPair, Factory, Router
 src/libraries/       # Math.sqrt, UQ112x112 (TWAP)
 src/mocks/           # MockERC20 (tests / Anvil)
 src/utils/           # ReentrancyGuard (EIP-1153)
-src/TokenSwapERC20.sol  # LP ERC-20 (mint a address(0) OK)
-src/TokenSwapPair.sol   # mint + _update; swap/burn stub
-test/                # Math, Update, Pair (swap/burn en rojo)
+src/TokenSwapFactory.sol
+src/TokenSwapRouter.sol      # add/remove liquidity + swap (slippage)
+src/TokenSwapERC20.sol
+src/TokenSwapPair.sol
+test/                        # Pair, Factory, Router, Math, Update
 doc/                 # Plan y diagramas
 lib/                 # Dependencias (gitignored)
 ```
