@@ -1,6 +1,6 @@
 # Planificación — Module 06: Constant Product AMM (Token Swap)
 
-**Estado:** Fases **0–6** ✅ · fases **7–8** + demo Next.js pendientes.
+**Estado:** Fases **0–8** ✅ + **UI** ✅ (demo Next.js con tema claro/oscuro).
 
 ## 1. Objetivo del proyecto
 
@@ -168,7 +168,7 @@ address public immutable token1;
 | **6** | `TokenSwapFactory` + `TokenSwapRouter` (slippage) | ✅ |
 | **7** | Invariant suite + fuzz `bound()` + SWC-AUDIT | ✅ |
 | **8** | Gas snapshot + NatSpec + SafeTransfer hardening | ✅ |
-| **UI** | Demo Next.js (swap + add/remove LP) | 🔲 |
+| **UI** | Demo Next.js (swap + add/remove LP) | ✅ |
 
 ---
 
@@ -201,7 +201,7 @@ address public immutable token1;
 - [x] NatSpec en funciones public/external
 - [x] Gas baseline (`doc/GAS.md` + `.gas-snapshot`)
 - [x] `SafeTransfer` hardened (bubble-revert SWC-104)
-- [ ] Demo frontend (Anvil + swap/LP)
+- [x] Demo frontend (Anvil + swap/LP + tema claro/oscuro)
 
 ---
 

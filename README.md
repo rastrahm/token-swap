@@ -2,7 +2,7 @@
 
 AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y oráculo TWAP. Solidity `0.8.24` + Foundry.
 
-**Estado:** Fases **0–8** ✅ (contratos + seguridad + gas). Demo Next.js pendiente.
+**Estado:** Fases **0–8** ✅ + **UI** ✅ (Next.js swap/LP + tema claro/oscuro).
 
 ---
 
@@ -14,7 +14,7 @@ AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y orá
 | Tooling | Foundry (`forge` / `cast` / `anvil`) |
 | Librerías | OpenZeppelin Contracts v5.2, forge-std |
 | Modelo | Constant product · fee 997/1000 · TWAP |
-| UI demo | Next.js 15 (fase UI) |
+| UI demo | Next.js 15 (fase UI) — swap, liquidez, tema claro/oscuro |
 
 ---
 
@@ -29,6 +29,7 @@ AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y orá
 | [doc/flujograma.md](./doc/flujograma.md) | Flujograma operativo y K-check |
 | [doc/SWC-AUDIT.md](./doc/SWC-AUDIT.md) | Auditoría SWC-100–136 y mapeo a tests |
 | [doc/GAS.md](./doc/GAS.md) | Gas report baseline y optimizaciones |
+| [doc/DEPLOY.md](./doc/DEPLOY.md) | Deploy Anvil + configuración frontend |
 
 ---
 
@@ -58,7 +59,9 @@ src/TokenSwapFactory.sol
 src/TokenSwapRouter.sol      # add/remove liquidity + swap (slippage)
 src/TokenSwapERC20.sol
 src/TokenSwapPair.sol
-test/                        # Pair, Factory, Router, fuzz, invariant, attack
+test/                        # Pair, Factory, Router, fuzz, invariant, attack, gas
+frontend/                    # Next.js demo (swap + LP + tema)
+script/Deploy.s.sol          # Deploy Anvil para la UI
 doc/                 # Plan y diagramas
 lib/                 # Dependencias (gitignored)
 ```
@@ -70,7 +73,6 @@ lib/                 # Dependencias (gitignored)
 ```shell
 forge build
 forge test
-forge snapshot --match-contract TokenSwapGasTest
-forge test --gas-report
+cd frontend && npm install && npm run dev
 forge fmt
 ```
