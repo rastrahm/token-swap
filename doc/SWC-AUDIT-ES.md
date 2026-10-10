@@ -1,5 +1,7 @@
 # Auditoría SWC — Token Swap AMM
 
+🇬🇧 [English version](./SWC-AUDIT-EN.md)
+
 Verificación de `TokenSwapPair`, `TokenSwapFactory` y `TokenSwapRouter` contra el [SWC Registry](https://swcregistry.io/) (EIP-1470) y principios del monorepo (custom errors, `ReentrancyGuard`, SafeERC20, K-check).
 
 > **Nota:** El SWC Registry no se mantiene activamente desde ~2020. Complementar con [SCSVS](https://github.com/ComposableSecurity/SCSVS) y [EEA EthTrust](https://entethalliance.org/specs/ethtrust/).
@@ -7,7 +9,7 @@ Verificación de `TokenSwapPair`, `TokenSwapFactory` y `TokenSwapRouter` contra 
 **Contratos auditados:** `src/TokenSwapPair.sol`, `src/TokenSwapFactory.sol`, `src/TokenSwapRouter.sol` (+ interfaces / libs)  
 **Fecha:** 2026-09-01  
 **Referencia tests:** `test/TokenSwapPair.t.sol`, `test/TokenSwapFactory.t.sol`, `test/TokenSwapRouter.t.sol`, `test/fuzz/`, `test/invariant/`, `test/attack/`, `test/gas/`  
-**Gas:** [`GAS.md`](./GAS.md)
+**Gas:** [`GAS-ES.md`](./GAS-ES.md)
 
 ---
 
@@ -140,5 +142,5 @@ Tokens enviados directamente al par sin `mint` incrementan balances vs reservas 
 - [SWC Registry](https://swcregistry.io/)
 - [EIP-1470](https://eips.ethereum.org/EIPS/eip-1470)
 - Uniswap V2 (referencia de diseño constant product)
-- Gas: [`GAS.md`](./GAS.md)
-- Monorepo NFT: [`04-erc721/doc/SWC-AUDIT.md`](../../04-erc721/doc/SWC-AUDIT.md)
+- Gas: [`GAS-ES.md`](./GAS-ES.md)
+- Monorepo NFT: [`04-erc721/doc/SWC-AUDIT-ES.md`](../../04-erc721/doc/SWC-AUDIT-ES.md)

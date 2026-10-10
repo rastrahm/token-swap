@@ -1,17 +1,17 @@
-# Documentación — Module 06: Constant Product AMM
+# Documentation / Documentación — Module 06: Constant Product AMM
 
-Índice de la carpeta `doc/`. **Proyecto completo** (contratos + seguridad + gas + UI).
+| Language | Index |
+|----------|-------|
+| 🇬🇧 English | [README-EN.md](./README-EN.md) |
+| 🇪🇸 Español | [README-ES.md](./README-ES.md) |
 
-| Documento | Contenido |
-|-----------|-----------|
-| [PLANIFICACION.md](./PLANIFICACION.md) | Objetivo, alcance, fases TDD, criterios |
-| [SWC-AUDIT.md](./SWC-AUDIT.md) | Matriz SWC-100–136, mapeo a tests |
-| [GAS.md](./GAS.md) | Baseline gas, optimizaciones, snapshot |
-| [DEPLOY.md](./DEPLOY.md) | Deploy Anvil + `.env.local` del frontend |
-| [diagrama-clases.md](./diagrama-clases.md) | UML contratos / libs / tests / UI |
-| [diagrama-flujo.md](./diagrama-flujo.md) | Flujos mint / swap / burn / Router / TWAP |
-| [flujograma.md](./flujograma.md) | Operativo, K-check, seguridad, pipeline TDD |
-
-**Contratos:** `TokenSwapPair` · `TokenSwapFactory` · `TokenSwapRouter`  
-**UI:** `frontend/` — swap, liquidez, tema claro/oscuro  
-**Tests:** `forge test` → **60 PASS** · `cd frontend && npm test`
+| Topic / Tema | English | Español |
+|--------------|---------|---------|
+| Planning / Planificación | [PLANIFICACION-EN.md](./PLANIFICACION-EN.md) | [PLANIFICACION-ES.md](./PLANIFICACION-ES.md) |
+| Technical decisions / Decisiones técnicas | [DECISIONES-EN.md](./DECISIONES-EN.md) | [DECISIONES-ES.md](./DECISIONES-ES.md) |
+| SWC audit / Auditoría SWC | [SWC-AUDIT-EN.md](./SWC-AUDIT-EN.md) | [SWC-AUDIT-ES.md](./SWC-AUDIT-ES.md) |
+| Gas | [GAS-EN.md](./GAS-EN.md) | [GAS-ES.md](./GAS-ES.md) |
+| Deploy | [DEPLOY-EN.md](./DEPLOY-EN.md) | [DEPLOY-ES.md](./DEPLOY-ES.md) |
+| Class diagram / Diagrama de clases | [diagrama-clases-EN.md](./diagrama-clases-EN.md) | [diagrama-clases-ES.md](./diagrama-clases-ES.md) |
+| Flow diagram / Diagrama de flujo | [diagrama-flujo-EN.md](./diagrama-flujo-EN.md) | [diagrama-flujo-ES.md](./diagrama-flujo-ES.md) |
+| Flowchart / Flujograma | [flujograma-EN.md](./flujograma-EN.md) | [flujograma-ES.md](./flujograma-ES.md) |

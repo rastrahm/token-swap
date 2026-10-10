@@ -1,78 +1,41 @@
 # 06 — Constant Product AMM (Token Swap)
 
-AMM de producto constante (`x * y = k`) con fee **0.3%**, mint/burn de LP y oráculo TWAP. Solidity `0.8.24` + Foundry.
+Constant product AMM (`x * y = k`) · fee 0.3% · TWAP · Solidity `0.8.24` + Foundry · Next.js demo.
 
-**Estado:** Fases **0–8** ✅ + **UI** ✅ (Next.js swap/LP + tema claro/oscuro).
-
----
-
-## Stack
-
-| Capa | Tecnología |
-|------|------------|
-| Contratos | Solidity `0.8.24` |
-| Tooling | Foundry (`forge` / `cast` / `anvil`) |
-| Librerías | OpenZeppelin Contracts v5.2, forge-std |
-| Modelo | Constant product · fee 997/1000 · TWAP |
-| UI demo | Next.js 15 (fase UI) — swap, liquidez, tema claro/oscuro |
+AMM de producto constante (`x * y = k`) · fee 0.3% · TWAP · Solidity `0.8.24` + Foundry · demo Next.js.
 
 ---
 
-## Documentación
+## Choose your language / Elegí tu idioma
 
-| Doc | Descripción |
-|-----|-------------|
-| [doc/README.md](./doc/README.md) | Índice de documentación |
-| [doc/PLANIFICACION.md](./doc/PLANIFICACION.md) | Plan, fases TDD y criterios de aceptación |
-| [doc/diagrama-flujo.md](./doc/diagrama-flujo.md) | Flujos mint / swap / burn |
-| [doc/diagrama-clases.md](./doc/diagrama-clases.md) | UML de contratos |
-| [doc/flujograma.md](./doc/flujograma.md) | Flujograma operativo y K-check |
-| [doc/SWC-AUDIT.md](./doc/SWC-AUDIT.md) | Auditoría SWC-100–136 y mapeo a tests |
-| [doc/GAS.md](./doc/GAS.md) | Gas report baseline y optimizaciones |
-| [doc/DEPLOY.md](./doc/DEPLOY.md) | Deploy Anvil + configuración frontend |
+| Language | Readme | Documentation |
+|----------|--------|---------------|
+| 🇬🇧 English | [README-EN.md](./README-EN.md) | [doc/README-EN.md](./doc/README-EN.md) |
+| 🇪🇸 Español | [README-ES.md](./README-ES.md) | [doc/README-ES.md](./doc/README-ES.md) |
 
 ---
 
-## Setup
+## Documents / Documentos
+
+| Topic / Tema | English | Español |
+|--------------|---------|---------|
+| Planning / Planificación | [PLANIFICACION-EN.md](./doc/PLANIFICACION-EN.md) | [PLANIFICACION-ES.md](./doc/PLANIFICACION-ES.md) |
+| Technical decisions / Decisiones técnicas | [DECISIONES-EN.md](./doc/DECISIONES-EN.md) | [DECISIONES-ES.md](./doc/DECISIONES-ES.md) |
+| Class diagram / Diagrama de clases | [diagrama-clases-EN.md](./doc/diagrama-clases-EN.md) | [diagrama-clases-ES.md](./doc/diagrama-clases-ES.md) |
+| Flow diagram / Diagrama de flujo | [diagrama-flujo-EN.md](./doc/diagrama-flujo-EN.md) | [diagrama-flujo-ES.md](./doc/diagrama-flujo-ES.md) |
+| Flowchart / Flujograma | [flujograma-EN.md](./doc/flujograma-EN.md) | [flujograma-ES.md](./doc/flujograma-ES.md) |
+| SWC audit / Auditoría SWC | [SWC-AUDIT-EN.md](./doc/SWC-AUDIT-EN.md) | [SWC-AUDIT-ES.md](./doc/SWC-AUDIT-ES.md) |
+| Gas | [GAS-EN.md](./doc/GAS-EN.md) | [GAS-ES.md](./doc/GAS-ES.md) |
+| Deploy | [DEPLOY-EN.md](./doc/DEPLOY-EN.md) | [DEPLOY-ES.md](./doc/DEPLOY-ES.md) |
+
+---
+
+## Quick start / Inicio rápido
 
 ```shell
-# Usar Foundry real (no el paquete npm "forge")
 export PATH="$HOME/.foundry/bin:$PATH"
-
-forge install foundry-rs/forge-std@v1.16.2 --no-git
-forge install OpenZeppelin/openzeppelin-contracts@v5.2.0 --no-git
-
-forge build
-forge test
-```
-
----
-
-## Estructura
-
-```
-src/interfaces/      # ITokenSwapPair, Factory, Router
-src/libraries/       # Math.sqrt, UQ112x112 (TWAP), SafeTransfer
-src/mocks/           # MockERC20 (tests / Anvil)
-src/utils/           # ReentrancyGuard (EIP-1153)
-src/TokenSwapFactory.sol
-src/TokenSwapRouter.sol      # add/remove liquidity + swap (slippage)
-src/TokenSwapERC20.sol
-src/TokenSwapPair.sol
-test/                        # Pair, Factory, Router, fuzz, invariant, attack, gas
-frontend/                    # Next.js demo (swap + LP + tema)
-script/Deploy.s.sol          # Deploy Anvil para la UI
-doc/                 # Plan y diagramas
-lib/                 # Dependencias (gitignored)
-```
-
----
-
-## Comandos útiles
-
-```shell
-forge build
-forge test
+forge build && forge test
 cd frontend && npm install && npm run dev
-forge fmt
 ```
+
+**Repositories / Repositorios:** [GitHub](https://github.com/rastrahm/token-swap) · [GitLab](https://gitlab.com/rastrahm/token-swap)

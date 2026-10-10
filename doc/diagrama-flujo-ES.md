@@ -1,6 +1,8 @@
 # Diagrama de flujo — Constant Product AMM (Token Swap)
 
-Flujos de negocio **to-be** (v1). Ver también [flujograma.md](./flujograma.md) y [PLANIFICACION.md](./PLANIFICACION.md).
+🇬🇧 [English version](./diagrama-flujo-EN.md)
+
+Flujos de negocio **to-be** (v1). Ver también [flujograma-ES.md](./flujograma-ES.md) y [PLANIFICACION-ES.md](./PLANIFICACION-ES.md).
 
 ## 1. Ciclo de vida del par
 

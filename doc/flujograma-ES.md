@@ -1,5 +1,7 @@
 # Flujograma del proyecto — Constant Product AMM (Token Swap)
 
+🇬🇧 [English version](./flujograma-EN.md)
+
 Flujograma operativo **to-be** (v1): setup → liquidez → swap/K-check → TWAP → seguridad → UI.
 
 ## 1. Flujograma maestro del sistema

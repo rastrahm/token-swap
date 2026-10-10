@@ -1,5 +1,7 @@
 # Planificación — Module 06: Constant Product AMM (Token Swap)
 
+🇬🇧 [English version](./PLANIFICACION-EN.md)
+
 **Estado:** Fases **0–8** ✅ + **UI** ✅ (demo Next.js con tema claro/oscuro).
 
 ## 1. Objetivo del proyecto
@@ -197,9 +199,9 @@ address public immutable token1;
 - [x] SafeERC20 / transfers con revert explícito
 - [x] Invariant `reserve0 * reserve1 >= k`
 - [x] Fuzz con `bound()`
-- [x] Auditoría SWC (`doc/SWC-AUDIT.md`)
+- [x] Auditoría SWC (`doc/SWC-AUDIT-ES.md`)
 - [x] NatSpec en funciones public/external
-- [x] Gas baseline (`doc/GAS.md` + `.gas-snapshot`)
+- [x] Gas baseline (`doc/GAS-ES.md` + `.gas-snapshot`)
 - [x] `SafeTransfer` hardened (bubble-revert SWC-104)
 - [x] Demo frontend (Anvil + swap/LP + tema claro/oscuro)
 
@@ -209,10 +211,10 @@ address public immutable token1;
 
 | Documento | Contenido |
 |-----------|-----------|
-| [diagrama-clases.md](./diagrama-clases.md) | UML contratos / libs / tests / UI |
-| [diagrama-flujo.md](./diagrama-flujo.md) | Flujos de negocio mint/swap/burn |
-| [flujograma.md](./flujograma.md) | Operativo + K-check + pipeline TDD |
-| [README.md](./README.md) | Índice de `doc/` (crear en fase 0) |
+| [diagrama-clases-ES.md](./diagrama-clases-ES.md) | UML contratos / libs / tests / UI |
+| [diagrama-flujo-ES.md](./diagrama-flujo-ES.md) | Flujos de negocio mint/swap/burn |
+| [flujograma-ES.md](./flujograma-ES.md) | Operativo + K-check + pipeline TDD |
+| [README-ES.md](./README-ES.md) | Índice de `doc/` (crear en fase 0) |
 
 ---
 

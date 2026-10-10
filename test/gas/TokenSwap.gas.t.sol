@@ -12,7 +12,7 @@ import {MockERC20} from "../../src/mocks/MockERC20.sol";
 
 /**
  * @title TokenSwapGasTest
- * @notice Baseline de gas para `forge snapshot` y `doc/GAS.md` (Fase 8).
+ * @notice Baseline de gas para `forge snapshot` y `doc/GAS-ES.md` (Fase 8).
  */
 contract TokenSwapGasTest is Test {
     TokenSwapFactory internal factory;
