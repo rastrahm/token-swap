@@ -57,7 +57,7 @@ export default function AyudaPage() {
           </li>
           <li>
             Copiá del log las addresses a <code>frontend/.env.local</code> (plantilla en{" "}
-            <code>.env.example</code>). Ver también <code>doc/DEPLOY.md</code>.
+            <code>.env.example</code>). Ver también <code>doc/DEPLOY-ES.md</code>.
           </li>
           <li>
             Terminal 3 — frontend:

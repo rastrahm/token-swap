@@ -1,8 +1,10 @@
-# Diagrama de clases — Constant Product AMM (Token Swap)
+# Class diagram — Constant Product AMM (Token Swap)
 
-Modelo estructural **to-be** (módulo 06, planificación). Contratos, librerías, tests y demo UI.
+🇪🇸 [Versión en español](./diagrama-clases-ES.md)
 
-## 1. Diagrama principal (UML / Mermaid)
+**To-be** structural model (module 06, planning). Contracts, libraries, tests and demo UI.
+
+## 1. Main diagram (UML / Mermaid)
 
 ```mermaid
 classDiagram
@@ -110,7 +112,7 @@ classDiagram
     TokenSwapRouter ..> ITokenSwapPair : mint/burn/swap
 ```
 
-## 2. Tests y handlers de invariantes
+## 2. Tests and invariant handlers
 
 ```mermaid
 classDiagram
@@ -167,41 +169,41 @@ classDiagram
     useWallet ..> PublicEnv
 ```
 
-## 4. Responsabilidades
+## 4. Responsibilities
 
-| Artefacto | Rol |
-|-----------|-----|
-| `TokenSwapPair` | Reservas, swap (0.3%), mint/burn LP, TWAP `_update`, K-check |
-| `TokenSwapFactory` | Crear pares únicos; orden `token0 < token1` |
+| Artifact | Role |
+|----------|------|
+| `TokenSwapPair` | Reserves, swap (0.3%), LP mint/burn, TWAP `_update`, K-check |
+| `TokenSwapFactory` | Create unique pairs; order `token0 < token1` |
 | `TokenSwapRouter` | Slippage, deadlines, transferFrom UX |
-| `Math` | `sqrt` para liquidez geométrica |
-| `UQ112x112` | Precio fixed-point para acumuladores TWAP |
-| `ReentrancyGuard` | Lock en mint/swap/burn |
-| `MockERC20` | Tokens de prueba Foundry / Anvil |
-| `Handler` | Actor aleatorio para invariant testing |
+| `Math` | `sqrt` for geometric liquidity |
+| `UQ112x112` | Fixed-point price for TWAP accumulators |
+| `ReentrancyGuard` | Lock on mint/swap/burn |
+| `MockERC20` | Test tokens for Foundry / Anvil |
+| `Handler` | Random actor for invariant testing |
 | `SwapApp` | UI: swap + add/remove liquidity |
 
-## 5. Dependencias (resumen)
+## 5. Dependencies (summary)
 
 ```
 TokenSwapPair
-  ├── hereda     → ERC20 (LP), ReentrancyGuard
-  ├── implementa → ITokenSwapPair
-  ├── usa        → Math.sqrt, UQ112x112 (TWAP)
-  ├── custodia   → IERC20 token0/token1
-  ├── emite      → Mint / Burn / Swap / Sync
-  └── revierte   → Insufficient* / InvalidK / ZeroAddress
+  ├── inherits   → ERC20 (LP), ReentrancyGuard
+  ├── implements → ITokenSwapPair
+  ├── uses       → Math.sqrt, UQ112x112 (TWAP)
+  ├── holds      → IERC20 token0/token1
+  ├── emits      → Mint / Burn / Swap / Sync
+  └── reverts    → Insufficient* / InvalidK / ZeroAddress
 
 TokenSwapFactory
-  ├── createPair → new TokenSwapPair (o CREATE2)
-  └── getPair    → mapping bidireccional
+  ├── createPair → new TokenSwapPair (or CREATE2)
+  └── getPair    → bidirectional mapping
 
 TokenSwapRouter
   ├── factory    → resolve pair
-  └── pair       → mint / burn / swap con minOut
+  └── pair       → mint / burn / swap with minOut
 ```
 
-## 6. Layout Solidity (Pair)
+## 6. Solidity layout (Pair)
 
 1. Imports / interfaces / libraries  
 2. Contract `TokenSwapPair`  

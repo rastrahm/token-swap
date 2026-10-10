@@ -1,5 +1,7 @@
 # Optimización de gas — Token Swap AMM
 
+🇬🇧 [English version](./GAS-EN.md)
+
 Regenerar:
 
 ```bash
@@ -92,4 +94,4 @@ forge snapshot --match-contract TokenSwapGasTest
 
 Suite Fase 8: **60 tests** verdes (unit + fuzz + invariant + attack + gas).
 
-Ver [`SWC-AUDIT.md`](./SWC-AUDIT.md) y [`PLANIFICACION.md`](./PLANIFICACION.md).
+Ver [`SWC-AUDIT-ES.md`](./SWC-AUDIT-ES.md) y [`PLANIFICACION-ES.md`](./PLANIFICACION-ES.md).

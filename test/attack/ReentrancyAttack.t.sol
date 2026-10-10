@@ -10,7 +10,7 @@ import {MockERC20Reentrant} from "../mocks/MockERC20Reentrant.sol";
 /**
  * @title ReentrancyAttackTest
  * @notice Fase 7 / SWC-107: callbacks ERC-20 maliciosos no reentran en mint/swap/burn.
- * @dev Referencia: `doc/SWC-AUDIT.md` · patrón monorepo `04-erc721`.
+ * @dev Referencia: `doc/SWC-AUDIT-ES.md` · patrón monorepo `04-erc721`.
  */
 contract ReentrancyAttackTest is Test {
     MockERC20Reentrant internal token0;
